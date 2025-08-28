@@ -1,0 +1,123 @@
+#deployment for fdederated catalog(an EDC component)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ template "app.fullname" . }}"
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "app.labels" . | nindent 4 }}
+    app.kubernetes.io/instance: {{ include "app.revision" . }}
+    app.kubernetes.io/part-of: rse
+spec:
+  replicas: {{ .Values.replicaCount }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      {{- include "app.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "app.labels" . | nindent 8 }}
+      annotations:
+        {{- include "app.metricsAnnotations" . | nindent 8 }}
+{{- if .Values.podAnnotations }}
+{{ toYaml .Values.podAnnotations | indent 8 }}
+{{- end }}
+    spec:
+      securityContext:
+{{- include "app.securitycontext" . | nindent 8 }}
+      {{- if .Values.image.pullSecrets }}
+      imagePullSecrets:
+        - name: {{ .Values.image.pullSecrets }}
+      {{- end }}
+      containers:
+      - name: {{ template "app.fullname" . }}
+        image: "{{ .Values.image.repository }}/{{ .Values.image.name }}:{{ default .Chart.AppVersion .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+        env:
+          # general
+          - name: NODE_ENV
+            value: {{ .Values.config.environment | quote }}
+          - name: NX_API_PORT
+            value: {{ .Values.config.http.port | quote }}
+          - name: NX_API_BASEPATH
+            {{- if .Values.config.api.basePath }}
+            value: {{ .Values.config.api.basePath | quote }}
+            {{- else }}
+            value: '/edc-fc/api'
+            {{- end }}
+          # size in bytes
+          - name: REQUEST_SIZE
+            value: "1000000"
+
+          # server
+          - name: SERVER_THROTLLER_TTL
+            value: "60"
+          - name: SERVER_THROTLLER_LIMIT
+            value: "10"
+
+          #logger
+          ## types "console"/"winston"
+          - name: LOGGER_TYPE
+            value: "console"
+
+          # winston config
+          - name: LOGGER_WINSTON_LEVEL
+            value: {{ .Values.log.level | default "INFO" }}
+          - name: LOGGER_WINSTON_TRANSPORTS_CONSOLE
+            value: "true"
+          - name: LOGGER_WINSTON_TRANSPORTS_FILE
+            value: "logs/app.log"
+
+          # cache
+          ## types "memory"/"redis"
+          - name: CACHE_TYPE
+            value: "redis"
+          - name: CACHE_TTL
+            value: "86400"
+          - name: TOKEN_TTL
+            value: "86400"
+          # 14 days in milliseconds
+          - name: SD_CACHE_TTL
+            value: "1209600000"
+          # 24 hours in milliseconds
+          - name: SD_QUEUE_DELAY
+            value: "86400000"
+          # QUEUE RETRIES
+          - name: SD_QUEUE_RETRIES
+            value: "13"
+            
+        {{- if .Values.secretEnv }}
+        {{- range $key, $value := .Values.secretEnv }}
+          - name: "{{ $key }}"
+            valueFrom:
+              secretKeyRef:
+                name: "{{ $value.name }}"
+                key: "{{ $value.key }}"
+        {{- end }}
+        {{- end }}
+{{- if .Values.extraVars }}
+{{ toYaml .Values.extraVars | indent 8 }}
+{{- end }}
+        ports:
+        {{- if .Values.metrics.enabled }}
+        - name: monitoring
+          containerPort: {{ .Values.metrics.port }}
+        {{- end }}
+        - name: http
+          containerPort: {{ .Values.config.http.port }}
+        readinessProbe:
+          httpGet:
+            path: {{ default "/edc-fc/api" .Values.config.api.basePath | trimSuffix "/" }}/health
+            port: {{ .Values.config.http.port }}
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          successThreshold: 2
+          failureThreshold: 2
+          timeoutSeconds: 5
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
