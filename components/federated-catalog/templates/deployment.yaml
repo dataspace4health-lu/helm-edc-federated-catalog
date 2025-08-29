@@ -112,7 +112,7 @@ spec:
           containerPort: {{ .Values.config.http.port }}
         readinessProbe:
           httpGet:
-            path: {{ default "/edc-fc/api" .Values.config.api.basePath | trimSuffix "/" }}/health
+            path: {{ default "/api" .Values.config.api.basePath | trimSuffix "/" }}/check/health
             port: {{ .Values.config.http.port }}
           initialDelaySeconds: 5
           periodSeconds: 5
