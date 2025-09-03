@@ -1,20 +1,15 @@
 # Introduction 
-TODO: Give a short introduction of your project. Let this section explain the objectives or the motivation behind this project. 
+This is the helm chart to deploy the Federated Catalog as part of EDC component.
 
 # Getting Started
-TODO: Guide users through getting your code up and running on their own system. In this section you can talk about:
-1.	Installation process
-2.	Software dependencies
-3.	Latest releases
-4.	API references
+Endpoints available
+1. POST http://dataspace4health.local/edc-fc/api/catalog/v1alpha/catalog/query
 
 # Build and Test
-TODO: Describe and show how to build your code and run the tests. 
+1.	Build and push the edc-federated-catalog image.
+    1.1  Repo for the code base - **edc-federated-catalog**
+2.	Run **make refresh** on top level of the helm directy to build and install the helm
 
 # Contribute
-TODO: Explain how other users and developers can contribute to make your code better. 
-
-If you want to learn more about creating good readme files then refer the following [guidelines](https://docs.microsoft.com/en-us/azure/devops/repos/git/create-a-readme?view=azure-devops). You can also seek inspiration from the below readme files:
-- [ASP.NET Core](https://github.com/aspnet/Home)
-- [Visual Studio Code](https://github.com/Microsoft/vscode)
-- [Chakra Core](https://github.com/Microsoft/ChakraCore)
+Author : Aastha Rai
+Improvements are welcome. You can also contribute in the project, make sure to use values.yaml and not hardcode the values of probes in charts.

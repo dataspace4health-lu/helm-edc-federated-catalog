@@ -9,12 +9,6 @@ metadata:
     {{- if .Values.ingress.rewriteTarget }}
       {{- $middlewares = printf "%s-%s-%s" .Release.Namespace (include "app.chartname" .) "replacepathregex@kubernetescrd" | append $middlewares }}
     {{- end }}
-    {{- if .Values.ingress.headers }}
-      {{- $middlewares = printf "%s-%s-%s" .Release.Namespace (include "app.chartname" .) "headers@kubernetescrd" | append $middlewares }}
-    {{- end }}
-    {{- if .Values.ingress.clientMaxBodySize }}
-      {{- $middlewares = printf "%s-%s-%s" .Release.Namespace (include "app.chartname" .) "client-max-body-size@kubernetescrd" | append $middlewares }}
-    {{- end }}
     {{- if $middlewares }}
       traefik.ingress.kubernetes.io/router.middlewares: {{ join "," $middlewares }}
     {{- end }}
