@@ -12,4 +12,3 @@ spec:
     regex: {{ .Values.ingress.rewriteTarget.regex }}
     replacement: {{ .Values.ingress.rewriteTarget.replacement }}
 {{- end }}
-{{- if .Values.ingress.headers }}
