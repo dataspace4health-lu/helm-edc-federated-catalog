@@ -34,6 +34,8 @@ spec:
       imagePullSecrets:
         - name: {{ .Values.image.pullSecrets }}
       {{- end }}
+
+      #container specification 
       containers:
       - name: {{ template "app.fullname" . }}
         image: "{{ .Values.image.repository }}/{{ .Values.image.name }}:{{ default .Chart.AppVersion .Values.image.tag }}"
@@ -47,9 +49,14 @@ spec:
                 key: "{{ $value.key }}"
         {{- end }}
         {{- end }}
+
+        #environment variables
+        env:
 {{- if .Values.extraVars }}
 {{ toYaml .Values.extraVars | indent 8 }}
 {{- end }}
+
+        #port specification
         ports:
         {{- if .Values.metrics.enabled }}
         - name: monitoring
@@ -66,5 +73,7 @@ spec:
           successThreshold: 2
           failureThreshold: 2
           timeoutSeconds: 5
+
+        #resource requests and limits
         resources:
 {{ toYaml .Values.resources | indent 10 }}
