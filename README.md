@@ -12,4 +12,3 @@ Endpoints available
 
 # Contribute
 Author : Aastha Rai
-Improvements are welcome. You can also contribute in the project, make sure to use values.yaml and not hardcode the values of probes in charts.
