@@ -50,6 +50,10 @@ spec:
         {{- end }}
         {{- end }}
 
+        volumeMounts:
+        - name: json-config-volume
+          mountPath: /etc/config
+
         #environment variables
         env:
 {{- if .Values.extraVars }}
@@ -77,3 +81,11 @@ spec:
         #resource requests and limits
         resources:
 {{ toYaml .Values.resources | indent 10 }}
+      
+      #volume specification
+      #to be removed when participants are stored in a database
+      #only for testing purposes
+      volumes:
+      - name: json-config-volume
+        configMap:
+          name: participants-configmap
