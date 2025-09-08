@@ -1,0 +1,17 @@
+# Introduction 
+This is the helm chart to deploy the Federated Catalog as part of EDC component.
+
+# Getting Started
+Endpoints available
+1. POST http://dataspace4health.local/edc-fc/api/catalog/v1alpha/catalog/query - to query catalog of the available and configured participants.
+
+# Build and Test
+1.	Build and push the edc-federated-catalog image.
+    1.1  Repo for the code base - **edc-federated-catalog**
+2.	Run **make refresh** on top level of the helm directy to build and install the helm
+3. A list of participnats can be updated by applying new config map with name **participants-configmap** or update the participants.json in the repo.
+
+
+# Contribute
+Author : Aastha Rai
+Improvements are welcome. You can also contribute in the project, make sure to use values.yaml and not hardcode the values of probes in charts.

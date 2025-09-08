@@ -1,0 +1,5 @@
+apiVersion: v2
+appVersion: v1.0.0
+description: Federated Catalog (an EDC component)
+name: federated-catalog
+version: 1.0.0

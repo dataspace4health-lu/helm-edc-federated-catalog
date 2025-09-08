@@ -1,0 +1,91 @@
+#deployment for fdederated catalog(an EDC component)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ template "app.chartname" . }}"
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "app.labels" . | nindent 4 }}
+    app.kubernetes.io/instance: {{ include "app.revision" . }}
+    app.kubernetes.io/part-of: federated-catalog
+spec:
+  replicas: {{ .Values.replicaCount }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      {{- include "app.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "app.labels" . | nindent 8 }}
+      annotations:
+        {{- include "app.metricsAnnotations" . | nindent 8 }}
+{{- if .Values.podAnnotations }}
+{{ toYaml .Values.podAnnotations | indent 8 }}
+{{- end }}
+    spec:
+      securityContext:
+{{- include "app.securitycontext" . | nindent 8 }}
+      {{- if .Values.image.pullSecrets }}
+      imagePullSecrets:
+        - name: {{ .Values.image.pullSecrets }}
+      {{- end }}
+
+      #container specification 
+      containers:
+      - name: {{ template "app.chartname" . }}
+        image: "{{ .Values.image.repository }}/{{ .Values.image.name }}:{{ default .Chart.AppVersion .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+        {{- if .Values.secretEnv }}
+        {{- range $key, $value := .Values.secretEnv }}
+          - name: "{{ $key }}"
+            valueFrom:
+              secretKeyRef:
+                name: "{{ $value.name }}"
+                key: "{{ $value.key }}"
+        {{- end }}
+        {{- end }}
+
+        volumeMounts:
+        - name: json-config-volume
+          mountPath: /etc/config
+
+        #environment variables
+        env:
+{{- if .Values.extraVars }}
+{{ toYaml .Values.extraVars | indent 8 }}
+{{- end }}
+
+        #port specification
+        ports:
+        {{- if .Values.metrics.enabled }}
+        - name: monitoring
+          containerPort: {{ .Values.metrics.port }}
+        {{- end }}
+        - name: http
+          containerPort: {{ .Values.config.http.port }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.readinessProbe.path }}
+              port: {{ .Values.config.http.port }}
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          successThreshold: 2
+          failureThreshold: 2
+          timeoutSeconds: 5
+
+        #resource requests and limits
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+      
+      #volume specification
+      #to be removed when participants are stored in a database
+      #only for testing purposes
+      volumes:
+      - name: json-config-volume
+        configMap:
+          name: participants-configmap

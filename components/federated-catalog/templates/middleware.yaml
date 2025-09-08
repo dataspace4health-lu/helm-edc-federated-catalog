@@ -1,0 +1,14 @@
+{{- if .Values.ingress.rewriteTarget }}
+# Rewrites incoming request paths using a regex.
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ include "app.chartname" . }}-replacepathregex
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "app.labels" . | nindent 4 }}
+spec:
+  replacePathRegex:
+    regex: {{ .Values.ingress.rewriteTarget.regex }}
+    replacement: {{ .Values.ingress.rewriteTarget.replacement }}
+{{- end }}
