@@ -9,6 +9,8 @@ Endpoints available
 1.	Build and push the edc-federated-catalog image.
     1.1  Repo for the code base - **edc-federated-catalog**
 2.	Run **make refresh** on top level of the helm directy to build and install the helm
+3. A list of participnats can be updated by applying new config map with name **participants-configmap** or update the participants.json in the repo.
+
 
 # Contribute
 Author : Aastha Rai
