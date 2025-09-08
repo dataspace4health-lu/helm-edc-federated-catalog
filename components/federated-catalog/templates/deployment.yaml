@@ -2,12 +2,12 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: "{{ template "app.fullname" . }}"
+  name: "{{ template "app.chartname" . }}"
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "app.labels" . | nindent 4 }}
     app.kubernetes.io/instance: {{ include "app.revision" . }}
-    app.kubernetes.io/part-of: rse
+    app.kubernetes.io/part-of: federated-catalog
 spec:
   replicas: {{ .Values.replicaCount }}
   strategy:
@@ -37,7 +37,7 @@ spec:
 
       #container specification 
       containers:
-      - name: {{ template "app.fullname" . }}
+      - name: {{ template "app.chartname" . }}
         image: "{{ .Values.image.repository }}/{{ .Values.image.name }}:{{ default .Chart.AppVersion .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
         {{- if .Values.secretEnv }}

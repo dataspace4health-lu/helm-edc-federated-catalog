@@ -13,7 +13,7 @@ CURRENT_DIR := $(notdir $(shell pwd))
 
 all: build install test uninstall clean
 
-refresh: uninstall clean build install
+refresh: uninstall clean build
 
 build: $(SUBDIRS) helm/*.tgz
 helm/*.tgz:
@@ -26,8 +26,7 @@ install:
 #Ensure the namespace exists (ignore error if it already exists)
 	kubectl create namespace edc 2> /dev/null || true
 #Install or upgrade Helm release into the namespace
-	helm upgrade --install $(CURRENT_DIR) helm/*.tgz --namespace edc
-
+	helm install $(CURRENT_DIR) helm/*.tgz --namespace edc
 
 uninstall:
 	kubectl delete pod playwright 2> /dev/null || true

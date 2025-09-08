@@ -1,6 +1,6 @@
 # -- Default number of instances to start 
 replicaCount: 1
-name: edc-federated-catalog
+name: federated-catalog
 # -- Ovverwrites application name
 # nameOverride: ""
 

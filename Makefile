@@ -20,7 +20,7 @@ docker rm -f playwright
 endef
 
 SUBDIRS := $(wildcard components/*/.)
-CURRENT_DIR := edc-federated-catalog
+CURRENT_DIR := edc-fc
 
 .PHONY: all build $(SUBDIRS) install test uninstall clean
 
@@ -39,7 +39,7 @@ install:
 #Ensure the namespace exists (ignore error if it already exists)
 	kubectl create namespace edc 2> /dev/null || true
 #Install or upgrade Helm release into the namespace
-	helm upgrade --install $(CURRENT_DIR) helm/*.tgz --namespace edc
+	helm install $(CURRENT_DIR) helm/*.tgz --namespace edc
 
 test:
 	$(test)
