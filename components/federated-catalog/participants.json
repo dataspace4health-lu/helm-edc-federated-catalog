@@ -1,4 +1,5 @@
 {
-  "Participant 1":  "http://edc-controlplane.edc.svc.cluster.local:8092/api/dsp"
+  "Participant 1":  "http://dataspace4health.local/edc-dsp",
+  "Participant 2":  "http://dataspace4health.local:8080/edc-dsp"
 }
 
