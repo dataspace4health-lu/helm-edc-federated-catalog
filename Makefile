@@ -47,6 +47,7 @@ test:
 uninstall:
 	kubectl delete pod playwright 2> /dev/null || true
 	helm uninstall $(CURRENT_DIR) --namespace edc 2> /dev/null || true
+	kubectl delete pvc data-$(CURRENT_DIR)-postgresql-0 --namespace edc 2> /dev/null || true
 
 clean: $(SUBDIRS)
 	rm -rf charts helm

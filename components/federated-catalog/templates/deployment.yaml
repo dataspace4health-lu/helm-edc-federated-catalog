@@ -40,6 +40,16 @@ spec:
       - name: {{ template "app.chartname" . }}
         image: "{{ .Values.image.repository }}/{{ .Values.image.name }}:{{ default .Chart.AppVersion .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+        env:
+        - name: POSTGRES_USER
+          value: {{ .Values.postgresql.auth.username | quote }}
+        - name: POSTGRES_DB
+          value: {{ .Values.postgresql.auth.database | quote }}
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "app.fullname" . }}-postgresql
+              key: password
         {{- if .Values.secretEnv }}
         {{- range $key, $value := .Values.secretEnv }}
           - name: "{{ $key }}"
