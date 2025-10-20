@@ -26,18 +26,41 @@ podAnnotations: {}
 extraVars:
   - name: WEB_HTTP_CATALOG_PATH
     value: "/api/catalog"
+
   - name: WEB_HTTP_CATALOG_PORT
     value: "9195"
+
   - name: WEB_HTTP_PATH
     value: "/api"
+
   - name: WEB_HTTP_PORT
     value: "8080"
+
   - name: EDC_CATALOG_CACHE_EXECUTION_DELAY_SECONDS
     value: "5"
+
   - name: EDC_CATALOG_CACHE_EXECUTION_PERIOD_SECONDS
     value: "5"
+
   - name: EDC_CATALOG_CACHE_PARTITION_NUM_CRAWLERS
     value: "1"
+  
+  #The origin maps to the domain from which the requests are allowed, here it is dashboard domain.
+  #TODO: it changes when deployed on production environment with correct domain name
+  - name: EDC_WEB_REST_CORS_ORIGINS
+    value: "http://dataspace4health.local"
+  
+  - name: EDC_WEB_REST_CORS_ENABLED
+    value: "true"
+  
+  - name: EDC_WEB_REST_CORS_HEADERS
+    value: "Authorization, Content-Type, Origin, Accept, x-api-key"
+  
+  - name: EDC_WEB_REST_CORS_METHODS
+    value: "GET,POST,PUT,DELETE,OPTIONS"      
+  
+  - name: LOG_LEVEL
+    value: "debug"
 
 
 ## Configure pod autoscaling
