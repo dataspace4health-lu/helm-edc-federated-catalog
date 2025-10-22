@@ -40,34 +40,11 @@ spec:
       - name: {{ template "app.chartname" . }}
         image: "{{ .Values.image.repository }}/{{ .Values.image.name }}:{{ default .Chart.AppVersion .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
-        env:
-        - name: POSTGRES_USER
-          value: {{ .Values.postgresql.auth.username | quote }}
-        - name: POSTGRES_DB
-          value: {{ .Values.postgresql.auth.database | quote }}
-        - name: POSTGRES_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ include "app.fullname" . }}-postgresql
-              key: password
-        {{- if .Values.secretEnv }}
-        {{- range $key, $value := .Values.secretEnv }}
-          - name: "{{ $key }}"
-            valueFrom:
-              secretKeyRef:
-                name: "{{ $value.name }}"
-                key: "{{ $value.key }}"
-        {{- end }}
-        {{- end }}
-
-        volumeMounts:
-        - name: json-config-volume
-          mountPath: /etc/config
 
         #environment variables
         env:
         - name: LOG_LEVEL
-          value: "{{ .Values.log.level }}"
+          value: "{{ .Values.log.level | default "info" }}"
         - name: EDC_CATALOG_CACHE_EXECUTION_DELAY_SECONDS
           value: "{{ .Values.config.cacheExecutionDelay }}"
         - name: EDC_CATALOG_CACHE_EXECUTION_PERIOD_SECONDS
@@ -105,9 +82,33 @@ spec:
           value: "origin, content-type, accept, authorization, x-api-key"
         - name: EDC_WEB_REST_CORS_METHODS
           value: "POST, OPTIONS"
+
+        - name: EDC_DATASOURCE_DEFAULT_URL
+          value: jdbc:postgresql://{{ include "app.chartname" . }}-postgresql-hl.{{ .Release.Namespace }}.svc.cluster.local:5432/{{ .Values.postgresql.auth.database }}
+        - name: EDC_DATASOURCE_DEFAULT_USER
+          value: {{ .Values.postgresql.auth.username | quote }}
+        - name: EDC_DATASOURCE_DEFAULT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "app.chartname" . }}-postgresql
+              key: postgres-password
+        - name: EDC_SQL_SCHEMA_AUTOCREATE
+          value: "true"
+        {{- if .Values.secretEnv }}
+        {{- range $key, $value := .Values.secretEnv }}
+          - name: "{{ $key }}"
+            valueFrom:
+              secretKeyRef:
+                name: "{{ $value.name }}"
+                key: "{{ $value.key }}"
+        {{- end }}
+        {{- end }}
 {{- if .Values.extraVars }}
 {{ toYaml .Values.extraVars | indent 8 }}
 {{- end }}
+        volumeMounts:
+        - name: json-config-volume
+          mountPath: /etc/config
 
         #port specification
         ports:
