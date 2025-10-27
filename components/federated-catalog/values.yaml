@@ -113,14 +113,6 @@ config:
       read: 10s
       write: 10s
 
-redis:
-  enabled: false
-
-storage:
-  enabled: true
-  size: 1Gi
-  path: "/mnt/data"
-
 postgresql:
   enabled: true
   image:
@@ -134,12 +126,15 @@ postgresql:
     database: postgres
   primary:
     persistence:
+      enabled: true
       size: 5Gi
+      path: "/mnt/data"
 
 ingress:
   enabled: true
   hosts:
-    - paths:
+    - host: dataspace4health.local
+      paths:
       - path: /edc-fc
         port: 9195
         pathType: Prefix
@@ -147,9 +142,9 @@ ingress:
     - secretName: dataspace4health.local
       hosts:
         - dataspace4health.local
-  rewriteTarget:
-    regex: ^/edc-fc/(.*)
-    replacement: /$1
+  rewriteTargets:
+    - regex: ^/edc-fc/(.*)
+      replacement: /$1
 
 ## the health check end point is provided by the observability module of EDC
 readinessProbe:

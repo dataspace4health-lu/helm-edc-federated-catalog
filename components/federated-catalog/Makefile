@@ -23,15 +23,28 @@ $(SUBDIRS):
 	$(MAKE) -C $@ $(MAKECMDGOALS)
 
 install:
+ifeq ($(strip $(NAMESPACE)),)
+	$(eval NAMESPACE := default)
+	@echo "NAMESPACE is not set, using default. Usage: make install NAMESPACE=$(NAMESPACE)"
+endif
+
+	@echo "Installing on namespace $(NAMESPACE)"
 #Ensure the namespace exists (ignore error if it already exists)
-	kubectl create namespace edc 2> /dev/null || true
+	kubectl create namespace $(NAMESPACE) 2> /dev/null || true
 #Install or upgrade Helm release into the namespace
-	helm install $(CURRENT_DIR) helm/*.tgz --namespace edc
+	helm install $(CURRENT_DIR) helm/*.tgz --namespace $(NAMESPACE)
 
 uninstall:
-	kubectl delete pod playwright 2> /dev/null || true
-	helm uninstall $(CURRENT_DIR) --namespace edc 2> /dev/null || true
-	kubectl delete pvc data-$(CURRENT_DIR)-postgresql-0 --namespace edc 2> /dev/null || true
-
+ifeq ($(strip $(NAMESPACE)),)
+	$(eval NAMESPACE := default)
+	@echo "NAMESPACE is not set, using default. Usage: make uninstall NAMESPACE=$(NAMESPACE)"
+endif
+# 	kubectl delete pod playwright 2> /dev/null || true
+	
+	@echo "Uninstalling on namespace $(NAMESPACE)"
+	helm uninstall $(CURRENT_DIR) --namespace $(NAMESPACE) 2> /dev/null || true
+	kubectl delete pvc data-$(CURRENT_DIR)-postgresql-0 --namespace $(NAMESPACE) 2> /dev/null || true
+	kubectl delete namespace $(NAMESPACE) --wait=true --timeout=60s 2> /dev/null || true
+	
 clean: $(SUBDIRS)
 	rm -rf charts helm

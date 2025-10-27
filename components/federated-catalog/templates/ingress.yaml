@@ -6,8 +6,17 @@ metadata:
   namespace: {{ .Release.Namespace }}
   annotations:
     {{- $middlewares := list }}
-    {{- if .Values.ingress.rewriteTarget }}
-      {{- $middlewares = printf "%s-%s-%s" .Release.Namespace (include "app.chartname" .) "replacepathregex@kubernetescrd" | append $middlewares }}
+    {{- if .Values.ingress.rewriteTargets }}
+      {{- range $i, $target := .Values.ingress.rewriteTargets }}
+        {{- $mwName := printf "%s-%s-replacepathregex-%d@kubernetescrd" $.Release.Namespace (include "app.chartname" $) $i }}
+        {{- $middlewares = append $middlewares $mwName }}
+      {{- end }}
+    {{- end }}
+    {{- if .Values.ingress.rewriteBody }}
+      {{- range $i, $target := .Values.ingress.rewriteBody }}
+        {{- $mwName := printf "%s-%s-replacebodyregex-%d@kubernetescrd" $.Release.Namespace (include "app.chartname" $) $i }}
+        {{- $middlewares = append $middlewares $mwName }}
+      {{- end }}
     {{- end }}
     {{- if $middlewares }}
       traefik.ingress.kubernetes.io/router.middlewares: {{ join "," $middlewares }}
