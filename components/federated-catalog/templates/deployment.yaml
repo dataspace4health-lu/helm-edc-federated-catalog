@@ -78,10 +78,10 @@ spec:
         {{- end }}
         - name: http
           containerPort: {{ .Values.config.http.port }}
-          readinessProbe:
-            httpGet:
-              path: {{ .Values.readinessProbe.path }}
-              port: {{ .Values.config.http.port }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.readinessProbe.path }}
+            port: {{ .Values.config.http.port }}
           initialDelaySeconds: 5
           periodSeconds: 5
           successThreshold: 2
@@ -98,4 +98,4 @@ spec:
       volumes:
       - name: json-config-volume
         configMap:
-          name: participants-configmap
+          name: "{{ template "app.chartname" . }}-participants-configmap"

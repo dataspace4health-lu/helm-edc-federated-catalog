@@ -1,22 +1,4 @@
-federated-catalog:
+edc-federated-catalog:
   nameOverride: federated-catalog
-
-  storage:
-    enabled: true
-    size: 1Gi
-    path: "/mnt/data"
-
   postgresql:
-    enabled: true
-    auth:
-      postgresPassword: "xfsc4Ntt!"
-      username: "postgres"
-      password: "xfsc4Ntt!"
-      database: postgres
-    image:
-      registry: bitnamilegacy
-      repository: postgresql
-      tag: 16.2.0-debian-12-r8
-    primary:
-      persistence:
-        size: 5Gi
+    nameOverride: federated-catalog-postgresql

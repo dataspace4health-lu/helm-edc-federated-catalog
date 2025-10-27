@@ -1,8 +1,12 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: participants-configmap
-  namespace: edc
+  name: "{{ template "app.chartname" . }}-participants-configmap"
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "app.labels" . | nindent 4 }}
+    app.kubernetes.io/instance: {{ include "app.revision" . }}
+    app.kubernetes.io/part-of: federated-catalog
 data:
   participants.json: |-
 {{ .Files.Get "participants.json" | nindent 4 }}

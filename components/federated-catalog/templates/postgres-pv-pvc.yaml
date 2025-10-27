@@ -1,24 +1,24 @@
-{{- if .Values.storage.enabled }}
+{{- if and (eq .Values.postgresql.enabled false) (eq .Values.storage.enabled true) }}
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: {{ include "app.name" . }}-postgres-volume
+  name: {{ include "app.chartname" . }}-postgres-volume
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "app.labels" . | nindent 4 }}
 spec:
   storageClassName: manual
   capacity:
-    storage: {{ .Values.storage.size }}
+    storage: {{ .Values.postgresql.primary.persistence.size }}
   accessModes:
     - ReadWriteMany
   hostPath:
-    path: {{ .Values.storage.path }}
+    path: {{ .Values.postgresql.primary.persistence.path }}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: {{ include "app.name" . }}-postgres-claim
+  name: {{ include "app.chartname" . }}-postgres-claim
   labels:
     {{- include "app.labels" . | nindent 4 }}
 spec:
@@ -27,5 +27,5 @@ spec:
     - ReadWriteMany
   resources:
     requests:
-      storage: {{ .Values.storage.size }}
-{{- end }}
+      storage: {{ .Values.postgresql.primary.persistence.size }}
+{{- end }}    
