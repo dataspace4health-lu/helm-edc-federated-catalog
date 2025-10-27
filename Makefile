@@ -59,7 +59,7 @@ endif
 	
 	@echo "Uninstalling on namespace $(NAMESPACE)"
 	helm uninstall $(CURRENT_DIR) --namespace $(NAMESPACE) 2> /dev/null || true
-	kubectl delete pvc data-$(CURRENT_DIR)-federated-catalog-postgresql-0 --namespace $(NAMESPACE) 2> /dev/null || true
+	kubectl delete pvc data-$(CURRENT_DIR)-catalog-postgresql-0 --namespace $(NAMESPACE) 2> /dev/null || true
 	kubectl delete namespace $(NAMESPACE) --wait=true --timeout=60s 2> /dev/null || true
 	
 clean: $(SUBDIRS)
