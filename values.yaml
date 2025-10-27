@@ -1,4 +1,4 @@
 edc-federated-catalog:
-  nameOverride: federated-catalog
+  nameOverride: catalog
   postgresql:
-    nameOverride: federated-catalog-postgresql
+    nameOverride: catalog-postgresql
