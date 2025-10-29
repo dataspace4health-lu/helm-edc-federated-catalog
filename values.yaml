@@ -2,3 +2,7 @@ edc-federated-catalog:
   nameOverride: catalog
   postgresql:
     nameOverride: catalog-postgresql
+  config:
+    participants:
+    - url: "http://dataspace4health.local/edc/cp/dsp/api"
+    - url: "http://dataspace4health.local:8080/edc-dsp"

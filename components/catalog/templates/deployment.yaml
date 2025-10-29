@@ -66,6 +66,22 @@ spec:
 
         #environment variables
         env:
+        - name: LOG_LEVEL
+          value: "{{ .Values.log.level }}"
+        - name: EDC_CATALOG_CACHE_EXECUTION_DELAY_SECONDS
+          value: "{{ .Values.config.cacheExecutionDelay }}"
+        - name: EDC_CATALOG_CACHE_EXECUTION_PERIOD_SECONDS
+          value: "{{ .Values.config.cacheExecutionPeriod }}"
+        - name: EDC_CATALOG_CACHE_PARTITION_NUM_CRAWLERS
+          value: "{{ .Values.config.cachePartitionNumCrawlers }}"
+        - name: WEB_HTTP_PORT
+          value: "{{ .Values.config.http.port }}"
+        - name: WEB_HTTP_PATH
+          value: "{{ .Values.config.http.path }}"
+        - name: WEB_HTTP_CATALOG_PORT
+          value: "{{ .Values.config.catalog.port }}"
+        - name: WEB_HTTP_CATALOG_PATH
+          value: "{{ .Values.config.catalog.path }}"
 {{- if .Values.extraVars }}
 {{ toYaml .Values.extraVars | indent 8 }}
 {{- end }}
@@ -78,6 +94,8 @@ spec:
         {{- end }}
         - name: http
           containerPort: {{ .Values.config.http.port }}
+        - name: catalog
+          containerPort: {{ .Values.config.catalog.port }}
         readinessProbe:
           httpGet:
             path: {{ .Values.readinessProbe.path }}

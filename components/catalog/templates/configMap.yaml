@@ -9,4 +9,14 @@ metadata:
     app.kubernetes.io/part-of: federated-catalog
 data:
   participants.json: |-
-{{ .Files.Get "participants.json" | nindent 4 }}
+    {
+    {{- $list := .Values.config.participants }}
+    {{- range $i, $target := $list }}
+    {{- $lastIndex := sub (len $list) 1 }}
+    {{- if not (eq $i $lastIndex) }}
+      "Participant {{ add $i 1 }}": "{{ $target.url }}",
+    {{- else }}
+      "Participant {{ add $i 1 }}": "{{ $target.url }}"
+    {{- end }}
+    {{- end }}
+    }

@@ -10,6 +10,9 @@ spec:
   ports:
   - name: http
     targetPort: {{ .Values.config.http.port }}
-    port: {{ .Values.service.port }}
+    port: {{ .Values.service.http.port }}
+  - name: catalog
+    targetPort: {{ .Values.config.catalog.port }}
+    port: {{ .Values.service.catalog.port }}
   selector:
     {{- include "app.selectorLabels" . | nindent 4 }}
