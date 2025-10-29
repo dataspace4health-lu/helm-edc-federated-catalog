@@ -41,8 +41,6 @@ spec:
         image: "{{ .Values.image.repository }}/{{ .Values.image.name }}:{{ default .Chart.AppVersion .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
         env:
-        - name: HEALTH_ENDPOINT_PATH
-          value: {{ .Values.config.HEALTH_ENDPOINT_PATH | quote }}
         - name: POSTGRES_USER
           value: {{ .Values.postgresql.auth.username | quote }}
         - name: POSTGRES_DB

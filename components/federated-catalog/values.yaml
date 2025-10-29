@@ -24,9 +24,6 @@ image:
 podAnnotations: {}
 
 extraVars:
-  - name: HEALTH_ENDPOINT_PATH
-    value: "/edc/cp/base/api/check/health"
-
   - name: WEB_HTTP_CATALOG_PATH
     value: "/api/catalog"
 
