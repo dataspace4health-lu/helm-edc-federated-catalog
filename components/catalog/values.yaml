@@ -107,7 +107,7 @@ config:
     basePath: /api
   http:
     host: ""
-    port: 9195
+    port: 8080
     timeout:
       idle: 120s
       read: 10s
