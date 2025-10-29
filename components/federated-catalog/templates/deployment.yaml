@@ -83,7 +83,7 @@ spec:
         readinessProbe:
           httpGet:
             path: {{ .Values.readinessProbe.path }}
-            port: {{ .Values.readinessProbe.http.port }}
+            port: {{ .Values.config.http.port }}
           initialDelaySeconds: 5
           periodSeconds: 5
           successThreshold: 2
