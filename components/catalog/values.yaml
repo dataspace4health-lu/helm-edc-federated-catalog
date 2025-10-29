@@ -24,43 +24,19 @@ image:
 podAnnotations: {}
 
 extraVars:
-  - name: WEB_HTTP_CATALOG_PATH
-    value: "/api/catalog"
-
-  - name: WEB_HTTP_CATALOG_PORT
-    value: "9195"
-
-  - name: WEB_HTTP_PATH
-    value: "/api"
-
-  - name: WEB_HTTP_PORT
-    value: "8080"
-
-  - name: EDC_CATALOG_CACHE_EXECUTION_DELAY_SECONDS
-    value: "5"
-
-  - name: EDC_CATALOG_CACHE_EXECUTION_PERIOD_SECONDS
-    value: "5"
-
-  - name: EDC_CATALOG_CACHE_PARTITION_NUM_CRAWLERS
-    value: "1"
+  # #The origin maps to the domain from which the requests are allowed, here it is dashboard domain.
+  # #TODO: it changes when deployed on production environment with correct domain name
+  # - name: EDC_WEB_REST_CORS_ORIGINS
+  #   value: "http://dataspace4health.local"
   
-  #The origin maps to the domain from which the requests are allowed, here it is dashboard domain.
-  #TODO: it changes when deployed on production environment with correct domain name
-  - name: EDC_WEB_REST_CORS_ORIGINS
-    value: "http://dataspace4health.local"
+  # - name: EDC_WEB_REST_CORS_ENABLED
+  #   value: "true"
   
-  - name: EDC_WEB_REST_CORS_ENABLED
-    value: "true"
+  # - name: EDC_WEB_REST_CORS_HEADERS
+  #   value: "Authorization, Content-Type, Origin, Accept, x-api-key"
   
-  - name: EDC_WEB_REST_CORS_HEADERS
-    value: "Authorization, Content-Type, Origin, Accept, x-api-key"
-  
-  - name: EDC_WEB_REST_CORS_METHODS
-    value: "GET,POST,PUT,DELETE,OPTIONS"      
-  
-  - name: LOG_LEVEL
-    value: "debug"
+  # - name: EDC_WEB_REST_CORS_METHODS
+  #   value: "GET,POST,PUT,DELETE,OPTIONS"
 
 
 ## Configure pod autoscaling
@@ -94,24 +70,48 @@ security:
   runAsUid: 0
   # -- Group used by the apps
   runAsGid: 0
-##
-##
+
 service:
-  port: 9195
+  http:
+    port: 8080
+  catalog:
+    port: 9195
 
 #for now the edc federated catalog will be refered as edc-federated-catalog as we have another federated-catalog repo.
 #later we can change this to just federated-catalog
 config:
-  environment: development
-  api:
-    basePath: /api
+  cacheExecutionDelay: 5
+  cacheExecutionPeriod: 5
+  cachePartitionNumCrawlers: 1
   http:
     host: ""
     port: 8080
-    timeout:
-      idle: 120s
-      read: 10s
-      write: 10s
+    path: "/edc/fc/base/api"
+  catalog:
+    host: ""
+    port: 9195
+    path: "/edc/fc/catalog/api"
+
+ingress:
+  enabled: true
+  hosts:
+    - host: dataspace4health.local
+      paths:
+      - path: /edc/fc/catalog/api
+        port: 9195
+        pathType: Prefix
+  tls:
+    - secretName: dataspace4health.local
+      hosts:
+        - dataspace4health.local
+
+## the health check end point is provided by the observability module of EDC
+readinessProbe:
+  enabled: true
+  path: /edc/fc/base/api/check/health
+  port: 8080
+
+secretEnv:
 
 postgresql:
   enabled: true
@@ -129,28 +129,4 @@ postgresql:
       enabled: true
       size: 5Gi
       path: "/mnt/data"
-
-ingress:
-  enabled: true
-  hosts:
-    - host: dataspace4health.local
-      paths:
-      - path: /edc-fc
-        port: 9195
-        pathType: Prefix
-  tls:
-    - secretName: dataspace4health.local
-      hosts:
-        - dataspace4health.local
-  rewriteTargets:
-    - regex: ^/edc-fc/(.*)
-      replacement: /$1
-
-## the health check end point is provided by the observability module of EDC
-readinessProbe:
-  enabled: true
-  path: /api/check/health
-  port: 8080
-
-secretEnv:
 
