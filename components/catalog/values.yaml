@@ -83,6 +83,9 @@ config:
   cacheExecutionDelay: 5
   cacheExecutionPeriod: 5
   cachePartitionNumCrawlers: 1
+  participants:
+    - url: "http://dataspace4health.local/edc/cp/dsp/api"
+    - url: "http://dataspace4health.local:8080/edc-dsp"
   http:
     host: ""
     port: 8080
