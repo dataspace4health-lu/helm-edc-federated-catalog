@@ -106,7 +106,6 @@ service:
 #later we can change this to just federated-catalog
 config:
   environment: development
-  HEALTH_ENDPOINT_PATH: edc/cp/base/api/check/health
   api:
     basePath: /api
   http:
