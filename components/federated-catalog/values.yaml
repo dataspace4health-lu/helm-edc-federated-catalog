@@ -103,6 +103,7 @@ service:
 #later we can change this to just federated-catalog
 config:
   environment: development
+  HEALTH_ENDPOINT_PATH: api/check/health
   api:
     basePath: /api
   http:
@@ -150,7 +151,8 @@ ingress:
 readinessProbe:
   enabled: true
   path: /api/check/health
-  port: 8080
+  http:
+    port: 8080
 
 secretEnv:
 
