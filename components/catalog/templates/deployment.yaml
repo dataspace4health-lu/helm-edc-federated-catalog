@@ -82,6 +82,8 @@ spec:
           value: "{{ .Values.config.catalog.port }}"
         - name: WEB_HTTP_CATALOG_PATH
           value: "{{ .Values.config.catalog.path }}"
+        - name: EDC_HTTP_DISABLE_TLS
+          value: "{{ .Values.config.disableTLS | default "false" }}"
 {{- if .Values.extraVars }}
 {{ toYaml .Values.extraVars | indent 8 }}
 {{- end }}
