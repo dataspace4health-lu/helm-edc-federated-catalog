@@ -111,7 +111,6 @@ postgresql:
   auth:
     postgresPassword: "xfsc4Ntt!"
     username: "postgres"
-    password: "xfsc4Ntt!"
     database: postgres
   primary:
     persistence:
