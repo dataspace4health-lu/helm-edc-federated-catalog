@@ -1,0 +1,4 @@
+mirrors:
+  "ds4h-registry:5432":
+    endpoint:
+      - "http://ds4h-registry:5432"
