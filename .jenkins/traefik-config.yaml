@@ -1,0 +1,17 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: traefik
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    experimental:
+      plugins:
+        enabled: true
+    additionalArguments:
+      - "--experimental.plugins.rewriteBody.modulename=github.com/packruler/rewrite-body"
+      - "--experimental.plugins.rewriteBody.version=v1.2.0"
+      - "--experimental.plugins.rewriteHeaders.modulename=github.com/XciD/traefik-plugin-rewrite-headers"
+      - "--experimental.plugins.rewriteHeaders.version=v0.0.4"
+      - "--experimental.plugins.replacePathRegex.modulename=github.com/patternMiner/replacepathregex"
+      - "--experimental.plugins.replacePathRegex.version=v1.0.0"

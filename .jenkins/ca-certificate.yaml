@@ -1,0 +1,21 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+    name: ca
+    namespace: cert-manager
+spec:
+    isCA: true
+    commonName: ca
+    subject:
+        organizations:
+        - NTT Ltd.
+        organizationalUnits:
+        - NTT Luxembourg PSF SA
+    secretName: ca-secret
+    privateKey:
+        algorithm: ECDSA
+        size: 256
+    issuerRef:
+        name: selfsigner-issuer
+        kind: Issuer
+        group: cert-manager.io

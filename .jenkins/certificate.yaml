@@ -1,0 +1,23 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+    name: dataspace4health.local
+spec:
+    secretName: dataspace4health.local
+    isCA: false
+    commonName: dataspace4health.local
+    subject:
+        organizations:
+        - NTT Ltd.
+        organizationalUnits:
+        - NTT Luxembourg PSF SA
+    usages:
+        - server auth
+        - client auth
+    dnsNames:
+        - "dataspace4health.local"
+        - "*.dataspace4health.local"
+    issuerRef:
+        name: local-tls-issuer
+        kind: ClusterIssuer
+        group: cert-manager.io
