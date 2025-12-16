@@ -63,21 +63,6 @@ spec:
           value: "{{ .Values.config.disableTLS | default "false" }}"
         - name: EDC_WEB_REST_CORS_ENABLED
           value: "true"
-        - name: EDC_WEB_REST_CORS_ORIGINS
-          value: "*"
-          # TODO: current EDC implementation is wrong. It returns all configured origins
-          # in the access-control-allow-origin header.
-          # Only the value matching the origin request header should be returned.
-          # {{- if .Values.config.participants }}
-          #   {{- $allowed_origins := list }}
-          #   {{- range $i, $target := .Values.config.participants }}
-          #     {{- $origin := regexFind "^https?://[^/]+" $target.url -}}
-          #     {{- $allowed_origins = append $allowed_origins $origin }}
-          #   {{- end }}
-          #   {{- if $allowed_origins }}
-          # value: {{ join ", " $allowed_origins }}
-          #   {{- end }}
-          # {{- end }}
         - name: EDC_WEB_REST_CORS_HEADERS
           value: "origin, content-type, accept, authorization, x-api-key"
         - name: EDC_WEB_REST_CORS_METHODS
