@@ -92,8 +92,6 @@ spec:
 {{ toYaml .Values.extraVars | indent 8 }}
 {{- end }}
         volumeMounts:
-        - name: json-config-volume
-          mountPath: /etc/config
 
         #port specification
         ports:
@@ -119,10 +117,4 @@ spec:
         resources:
 {{ toYaml .Values.resources | indent 10 }}
       
-      #volume specification
-      #to be removed when participants are stored in a database
-      #only for testing purposes
       volumes:
-      - name: json-config-volume
-        configMap:
-          name: "{{ template "app.chartname" . }}-participants-configmap"
