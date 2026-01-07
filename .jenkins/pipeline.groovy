@@ -2,15 +2,16 @@ pipeline {
     agent any
 
     environment {
-        HELM_NAME = "${env.JOB_NAME.tokenize('/').dropRight(1).takeRight(1).join('-').toLowerCase()}"
+        HELM_NAME = "${env.JOB_NAME.tokenize('/').dropRight(1).takeRight(1).join('-').toLowerCase().replaceFirst(/^helm-/, '')}"
         KUBECONFIG = ".jenkins/kubeconfig"
+        REGISTRY = "ds4h-registry:5432"
         K3D_CLUSTER_NAME = "${env.HELM_NAME}-${env.BUILD_ID}"
         // MICROSERVICE_ROOT_PATH = "DS4H/Microservices"
         IMAGES = ""
     }
 
     parameters {
-        choice(name: 'PUBLISH_HELM', choices: ['', 'ds4h-registry:5432', 'ds4hacrshared.azurecr.io'], description: 'Publish helm after build to this repo')
+        booleanParam(name: 'PUBLISH', defaultValue: false, description: 'Set to true to publish artifacts')
     }
 
     stages {
@@ -66,7 +67,7 @@ pipeline {
         //                         parallelResults["${jobName}/${tag}"] = build(
         //                             job: "${jobName}/${tag}",
         //                             // parameters: [string(name: 'PUBLISH', value: "true")],
-        //                             parameters: [choice(name: 'PUBLISH_IMAGE', value: "ds4h-registry:5432")],
+        //                             parameters: [choice(name: 'PUBLISH', value: "ds4h-registry:5432")],
         //                             wait: true,       // wait for completion
         //                             propagate: true   // fail this pipeline if triggered job fails
         //                         )
@@ -164,10 +165,7 @@ pipeline {
 
                     def cluster = createCluster(2)
                     // echo "Deploying helm to Kubernetes ..."
-                    sh """
-                        helm upgrade --install edc-federator helm/*.tgz \
-                            --namespace default
-                    """
+                    sh "make install"
                 }
             }
         }
@@ -176,23 +174,27 @@ pipeline {
             steps {
                 script {
                     echo "Checking rollout status..."
-                    def deployments = [
-                        "edc-federator-catalog"
-                    ]
-
-                    for (d in deployments) {
-                        def status = sh(
-                            script: "kubectl -n default rollout status deployment/${d} --timeout=180s",
-                            returnStatus: true
-                        )
-
-                        if (status != 0) {
-                            echo "❌ Rollout failed for ${d}. Fetching events and pod details..."
-                            sh "kubectl -n default get events --sort-by=.metadata.creationTimestamp | tail -n 20"
-                            error("Deployment ${d} failed rollout verification.")
-                        } else {
-                            echo "✅ ${d} rolled out successfully."
-                        }
+                    def status = sh(
+                        script: """
+                            for ns in \$(kubectl get ns --no-headers | awk '{print \$1}' | grep -vE '^(cert-manager|kube-system|kube-public|kube-node-lease)\$'); do
+                                for deploy in \$(kubectl get deployments -n \$ns --no-headers | awk '{print \$1}'); do
+                                    echo "Waiting for deployment \$deploy in namespace \$ns..."
+                                    kubectl rollout status deployment/\$deploy -n \$ns --timeout=300s || {
+                                        echo "Timeout waiting for \$deploy in \$ns"
+                                        exit 1
+                                    }
+                                done
+                            done
+                        """,
+                        returnStatus: true
+                    )
+                    
+                    if (status != 0) {
+                        echo "❌ Rollout failed. Fetching events and pod details..."
+                        sh "kubectl get events -A --sort-by=.metadata.creationTimestamp | tail -n 20"
+                        error("Deployment ${d} failed rollout verification.")
+                    } else {
+                        echo "✅ Rollout successful."
                     }
                 }
             }
@@ -231,7 +233,8 @@ pipeline {
                                     -Dsonar.inclusions=**/*.yaml,**/*.yml \
                                     -Dsonar.scm.exclusions.disabled=true \
                                     -Dsonar.language=yaml \
-                                    -Dsonar.branch.name=${env.GIT_BRANCH.replaceFirst("^origin/", "")}
+                                    -Dsonar.branch.name=${env.GIT_BRANCH.replaceFirst("^origin/", "")} \
+                                    -Dsonar.qualitygate.wait=true
                             """
                         }
                     }
@@ -259,7 +262,7 @@ pipeline {
                         -v \$PWD/.jenkins/trivy-html.tpl:/template.tpl \
                         -v \$PWD/helm/manifests.yaml:/manifests.yaml \
                         aquasec/trivy:latest config /manifests.yaml \
-                        --exit-code 1 --timeout 15m --severity HIGH,CRITICAL \
+                        --debug --exit-code 1 --timeout 15m --severity HIGH,CRITICAL \
                         --format template --template "@/template.tpl" --output /output/trivy.html
                 """
             }
@@ -272,11 +275,47 @@ pipeline {
 
         stage('Publish Helm') {
             when {
-                expression { return params.PUBLISH_HELM != '' }
+                expression { env.BRANCH_NAME.startsWith('refs/tags/') || params.PUBLISH }
             }
             steps {
                 script {
                     echo "Pushing helm"
+                    
+                    // Get latest tag
+                    def tag = sh(
+                        script: "git describe --tags --abbrev=0 2>/dev/null || echo \"0.0.0\"", 
+                        returnStdout: true
+                    ).trim()
+                    tag = tag.replaceFirst(/^v/, "") // Trim leading v
+                    // Get version defined in the code
+                    def version = sh(
+                        script: "helm show chart helm/${env.HELM_NAME}-*.tgz | grep '^version:' | head -1 | sed -E 's/version:\\s?([0-9]+\\.[0-9]+\\.[0-9]+)/\\1/'",
+                        returnStdout: true
+                    ).trim()
+                    version = version.replaceFirst(/^v/, "") // Trim leading v
+                    version = version ?: "0.0.0" // default to 0.0.0
+                    if (version != tag) {
+                        error("❌ Version and Tag mismatch")
+                    }
+                    
+                    // Set the Tag to: 
+                    // 1. <version number> if there is a tag and the commit is the one of the tag
+                    // 2. <version number>-<commit hash> if there is a tag but the commit is ahead
+                    // 3. 0.0.0 if no tag exists
+                    tag = sh(
+                        script: "git describe --tags --exact-match 2>/dev/null || git describe --tags 2>/dev/null || echo 0.0.0", 
+                        returnStdout: true
+                    ).trim()
+                    tag = tag.replaceFirst(/^v/, "") // Trim leading v
+                    
+                    sh """
+                        echo "Logging into registry ${env.REGISTRY}"
+                        helm registry login --insecure ${env.REGISTRY} --username unused --password unused
+                        echo "saving helm ${env.REGISTRY}/helm/${env.HELM_NAME}:${tag}."
+                        helm push helm/${env.HELM_NAME}-*.tgz oci://${env.REGISTRY}/helm --plain-http
+                    """
+                    // Save it in the build description
+                    currentBuild.description = "BuiltHelm=${env.REGISTRY}/helm/${env.HELM_NAME}:${tag}"
                 }
             }
         }
