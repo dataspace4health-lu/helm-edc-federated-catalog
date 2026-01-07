@@ -35,13 +35,14 @@ spec:
         - name: {{ .Values.image.pullSecrets }}
       {{- end }}
 
-      #container specification 
+      # container specification 
       containers:
       - name: {{ template "app.chartname" . }}
         image: "{{ .Values.image.repository }}/{{ .Values.image.name }}:{{ default .Chart.AppVersion .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
-
-        #environment variables
+        securityContext:
+          readOnlyRootFilesystem: true
+        # environment variables
         env:
         - name: LOG_LEVEL
           value: "{{ .Values.log.level | default "info" }}"
@@ -67,7 +68,6 @@ spec:
           value: "origin, content-type, accept, authorization, x-api-key"
         - name: EDC_WEB_REST_CORS_METHODS
           value: "POST, OPTIONS"
-
         - name: EDC_DATASOURCE_DEFAULT_URL
           value: jdbc:postgresql://{{ include "app.chartname" . }}-postgresql-hl.{{ .Release.Namespace }}.svc.cluster.local:5432/{{ .Values.postgresql.auth.database }}
         - name: EDC_DATASOURCE_DEFAULT_USER
@@ -81,19 +81,21 @@ spec:
           value: "true"
         {{- if .Values.secretEnv }}
         {{- range $key, $value := .Values.secretEnv }}
-          - name: "{{ $key }}"
-            valueFrom:
-              secretKeyRef:
-                name: "{{ $value.name }}"
-                key: "{{ $value.key }}"
+        - name: "{{ $key }}"
+          valueFrom:
+            secretKeyRef:
+              name: "{{ $value.name }}"
+              key: "{{ $value.key }}"
         {{- end }}
         {{- end }}
 {{- if .Values.extraVars }}
 {{ toYaml .Values.extraVars | indent 8 }}
 {{- end }}
+        
         volumeMounts:
+          null
 
-        #port specification
+        # port specification
         ports:
         {{- if .Values.metrics.enabled }}
         - name: monitoring
@@ -113,8 +115,9 @@ spec:
           failureThreshold: 2
           timeoutSeconds: 5
 
-        #resource requests and limits
+        # resource requests and limits
         resources:
 {{ toYaml .Values.resources | indent 10 }}
       
       volumes:
+        null
