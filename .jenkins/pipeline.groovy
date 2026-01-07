@@ -192,7 +192,7 @@ pipeline {
                     if (status != 0) {
                         echo "❌ Rollout failed. Fetching events and pod details..."
                         sh "kubectl get events -A --sort-by=.metadata.creationTimestamp | tail -n 20"
-                        error("Deployment ${d} failed rollout verification.")
+                        error("Rollout failed.")
                     } else {
                         echo "✅ Rollout successful."
                     }
