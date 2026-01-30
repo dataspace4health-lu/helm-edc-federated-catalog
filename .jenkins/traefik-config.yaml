@@ -13,5 +13,3 @@ spec:
       - "--experimental.plugins.rewriteBody.version=v1.2.0"
       - "--experimental.plugins.rewriteHeaders.modulename=github.com/XciD/traefik-plugin-rewrite-headers"
       - "--experimental.plugins.rewriteHeaders.version=v0.0.4"
-      - "--experimental.plugins.replacePathRegex.modulename=github.com/patternMiner/replacepathregex"
-      - "--experimental.plugins.replacePathRegex.version=v1.0.0"
